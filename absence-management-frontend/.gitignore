@@ -1,18 +1,18 @@
 # Dependencies
-**/node_modules
-.pnpm-store/
+#**/node_modules
+#.pnpm-store/
 
 # Build outputs
-dist/
-build/
-*.dist
+#dist/
+#build/
+#*.dist
 
 # Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+#.env
+#.env.local
+#.env.development.local
+#.env.test.local
+#.env.production.local
 
 # IDE and editor files
 .vscode/
@@ -101,6 +101,6 @@ tmp/
 temp/
 
 # Database
-*.db
-*.sqlite
-*.sqlite3
+#*.db
+#*.sqlite
+#*.sqlite3
