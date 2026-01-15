@@ -4,7 +4,7 @@
  * Base URL: http://localhost:8000/api
  */
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'http://192.168.1.6:8000/api';
 
 // Helper function to get auth token
 function getAuthToken(): string | null {
@@ -41,11 +41,24 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || `API Error: ${response.statusText}`);
+    try {
+      const error = await response.json();
+      throw new Error(error.message || `API Error: ${response.statusText}`);
+    } catch (parseError) {
+      throw new Error(`API Error: ${response.statusText} - Server returned non-JSON response`);
+    }
   }
 
-  return response.json();
+  const text = await response.text();
+  if (!text) {
+    throw new Error('Empty response from server');
+  }
+  
+  try {
+    return JSON.parse(text);
+  } catch (parseError) {
+    throw new Error(`Invalid JSON response from server: ${text.substring(0, 100)}`);
+  }
 }
 
 // ==================== USER ENDPOINTS ====================

@@ -8,23 +8,26 @@ use Illuminate\Database\Eloquent\Model;
 class Presence extends Model
 {
     use HasFactory;
-    protected $table = 'presences';
 
     protected $fillable = [
-        'statut',
-        'heure_arrivee',
-        'horaire',
         'seance_id',
-        'etudiant_id'
+        'etudiant_id',
+        'statut',
+        'date_marquage'
     ];
+
+    protected $casts = [
+        'date_marquage' => 'datetime'
+    ];
+
+    // Relations
+    public function seance()
+    {
+        return $this->belongsTo(Seance::class, 'seance_id');
+    }
 
     public function etudiant()
     {
-        return $this->belongsTo(Etudiant::class);
-    }
-
-    public function seance()
-    {
-        return $this->belongsTo(Seance::class);
+        return $this->belongsTo(Etudiant::class, 'etudiant_id');
     }
 }

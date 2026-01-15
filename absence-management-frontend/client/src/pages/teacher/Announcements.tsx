@@ -12,54 +12,95 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MessageSquare, Send, Users, UserCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  target: 'students' | 'teachers' | 'all';
-  createdAt: string;
+  id: number;
+  titre: string;
+  contenu: string;
+  target?: 'students' | 'teachers' | 'all';
+  created_at: string;
 }
 
 export default function TeacherAnnouncements() {
+  const { user } = useAuth();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [target, setTarget] = useState<'students' | 'teachers' | 'all'>('students');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // --- Fetch announcements existantes depuis le backend
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/api/annonces', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAnnouncements(data.annonces);
+      } else {
+        toast.error(data.message || 'Failed to load announcements');
+      }
+    } catch (err) {
+      toast.error('Erreur lors du chargement des annonces');
+    }
+  };
+
+  useEffect(() => {
+    fetchAnnouncements();
+  }, []);
+
+  // --- Poster une nouvelle annonce
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim() || !content.trim()) {
-      toast.error('Please fill in all fields');
+      toast.error('Veuillez remplir tous les champs');
       return;
     }
 
     try {
       setIsSubmitting(true);
 
-      // In a real app, this would call an API
-      const newAnnouncement: Announcement = {
-        id: Date.now().toString(),
-        title: title.trim(),
-        content: content.trim(),
-        target,
-        createdAt: new Date().toISOString(),
+      const payload = {
+        titre: title.trim(),
+        contenu: content.trim(),
+        datepublication: new Date().toISOString().split('T')[0], // yyyy-mm-dd
+        enseignant_id: user?.enseignant_id || 1, // remplacer 1 par l'id réel de l'enseignant
       };
 
-      setAnnouncements([newAnnouncement, ...announcements]);
+      const res = await fetch('http://localhost:8000/api/annonces/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || 'Échec de la création de l’annonce');
+        return;
+      }
+
+      // Ajouter la nouvelle annonce au state
+      setAnnouncements([data.annonce, ...announcements]);
 
       // Reset form
       setTitle('');
       setContent('');
       setTarget('students');
 
-      toast.success('Announcement posted successfully');
+      toast.success('Annonce publiée avec succès');
     } catch (error) {
-      toast.error('Failed to post announcement');
+      toast.error('Erreur lors de la création de l’annonce');
     } finally {
       setIsSubmitting(false);
     }
@@ -90,62 +131,65 @@ export default function TeacherAnnouncements() {
   return (
     <ProtectedRoute allowedRoles={['enseignant']}>
       <DashboardLayout
-        title="Announcements"
-        description="Post and manage announcements for students and teachers"
+        title="Annonces"
+        description="Publier et gérer les annonces pour les étudiants et enseignants"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Create Announcement */}
+          {/* Formulaire de création */}
           <Card className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Create Announcement</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Créer une annonce</h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Target Selection */}
+              {/* Sélection du public cible */}
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Target Audience</label>
-                <Select value={target} onValueChange={(value: 'students' | 'teachers' | 'all') => setTarget(value)}>
+                <label className="block text-sm font-medium text-foreground mb-2">Public cible</label>
+                <Select
+                  value={target}
+                  onValueChange={(value: 'students' | 'teachers' | 'all') => setTarget(value)}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select target audience" />
+                    <SelectValue placeholder="Sélectionner le public" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="students">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4" />
-                        Students
+                        Étudiants
                       </div>
                     </SelectItem>
                     <SelectItem value="teachers">
                       <div className="flex items-center gap-2">
                         <UserCheck className="w-4 h-4" />
-                        Teachers
+                        Enseignants
                       </div>
                     </SelectItem>
                     <SelectItem value="all">
                       <div className="flex items-center gap-2">
                         <MessageSquare className="w-4 h-4" />
-                        All
+                        Tous
                       </div>
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Title */}
+              {/* Titre */}
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Title</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Titre</label>
                 <Input
                   type="text"
-                  placeholder="Announcement title"
+                  placeholder="Titre de l'annonce"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
                 />
               </div>
 
-              {/* Content */}
+              {/* Contenu */}
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Content</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Contenu</label>
                 <Textarea
-                  placeholder="Announcement content"
+                  placeholder="Contenu de l'annonce"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   rows={4}
@@ -153,51 +197,44 @@ export default function TeacherAnnouncements() {
                 />
               </div>
 
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting}
-              >
+              {/* Bouton */}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Posting...
-                  </>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                 ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Post Announcement
-                  </>
+                  <>Publier</>
                 )}
               </Button>
             </form>
           </Card>
 
-          {/* Recent Announcements */}
+          {/* Annonces récentes */}
           <Card className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Recent Announcements</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">Annonces récentes</h3>
 
             {announcements.length === 0 ? (
               <div className="text-center py-8">
                 <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">No announcements yet</p>
-                <p className="text-sm text-muted-foreground">Create your first announcement</p>
+                <p className="text-muted-foreground">Aucune annonce pour l'instant</p>
               </div>
             ) : (
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {announcements.map((announcement) => (
                   <div key={announcement.id} className="border border-border rounded-lg p-4">
                     <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-foreground">{announcement.title}</h4>
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTargetColor(announcement.target)}`}>
-                        {getTargetIcon(announcement.target)}
-                        {announcement.target}
+                      <h4 className="font-medium text-foreground">{announcement.titre}</h4>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTargetColor(
+                          announcement.target || 'all'
+                        )}`}
+                      >
+                        {getTargetIcon(announcement.target || 'all')}
+                        {announcement.target || 'all'}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">{announcement.content}</p>
+                    <p className="text-sm text-muted-foreground mb-2">{announcement.contenu}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(announcement.createdAt).toLocaleString()}
+                      {new Date(announcement.created_at).toLocaleString()}
                     </p>
                   </div>
                 ))}

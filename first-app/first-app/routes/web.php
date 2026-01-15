@@ -67,40 +67,43 @@ Route::get('/documents/enseignant/{enseignant_id}',[DocumentController::class, '
 Route::delete('/documents/{id}',[DocumentController::class, 'deleteDocument']);
 Route::get('/documents/{id}',[DocumentController::class, 'getDocument']);
 Route::post('/documents/{id}',[DocumentController::class, 'updateDocument']);
-});
 
 // """"""""""""""""""""""Annonce routes #############################"
-Route::post('/api/annonces/add',[AnnonceController::class, 'createAnnonce']);
-Route::get('/api/annonces',[AnnonceController::class, 'getAllAnnonces']);
-Route::get('/api/annonces/{id}',[AnnonceController::class, 'getAnnonceById']);
-Route::put('/api/annonces/{id}',[AnnonceController::class, 'updateAnnonce']);
-Route::delete('/api/annonces/{id}',[AnnonceController::class, 'deleteAnnonce']);
-Route::get('/api/annonces/enseignant/{enseignant_id}',[AnnonceController::class, 'getAnnoncesByEnseignant']);
+Route::post('/annonces/add',[AnnonceController::class, 'createAnnonce']);
+Route::get('/annonces',[AnnonceController::class, 'getAllAnnonces']);
+Route::get('/annonces/{id}',[AnnonceController::class, 'getAnnonceById']);
+Route::put('/annonces/{id}',[AnnonceController::class, 'updateAnnonce']);
+Route::delete('/annonces/{id}',[AnnonceController::class, 'deleteAnnonce']);
+Route::get('/annonces/enseignant/{enseignant_id}',[AnnonceController::class, 'getAnnoncesByEnseignant']);
 
 // """"""""""""""""""""""Module routes #############################"
-Route::post('/api/modules/add',[ModuleController::class, 'creeModule']);
-Route::get('/api/modules',[ModuleController::class, 'getAllModules']);
-Route::get('/api/modules/{id}',[ModuleController::class, 'getModuleById']);
-Route::put('/api/modules/{id}',[ModuleController::class, 'updateModule']);
-Route::delete('/api/modules/{id}',[ModuleController::class, 'deleteModule']);
-Route::get('/api/modules/enseignant/{enseignant_id}',[ModuleController::class, 'getModulesByEnseignant']);
-Route::get('/api/modules/filiere/{filiere_id}',[ModuleController::class, 'getModulesByFiliere']);
+Route::post('/modules/add',[ModuleController::class, 'creeModule']);
+Route::get('/modules',[ModuleController::class, 'getAllModules']);
+Route::get('/modules/{id}',[ModuleController::class, 'getModuleById']);
+Route::put('/modules/{id}',[ModuleController::class, 'updateModule']);
+Route::delete('/modules/{id}',[ModuleController::class, 'deleteModule']);
+Route::get('/modules/enseignant/{enseignant_id}',[ModuleController::class, 'getModulesByEnseignant']);
+Route::get('/modules/filiere/{filiere_id}',[ModuleController::class, 'getModulesByFiliere']);
 
 // """"""""""""""""""""""Seance routes #############################"
-Route::post('/api/seances/add',[SeanceController::class, 'creeSeance']);
-Route::get('/api/seances',[SeanceController::class, 'getAllSeances']);
-Route::get('/api/seances/{id}',[SeanceController::class, 'getSeanceById']);
-Route::put('/api/seances/{id}',[SeanceController::class, 'updateSeance']);
-Route::delete('/api/seances/{id}',[SeanceController::class, 'deleteSeance']);
-Route::get('/api/seances/module/{module_id}',[SeanceController::class, 'getSeancesByModule']);
+Route::post('/seances/add',[SeanceController::class, 'creeSeance']);
+Route::get('/seances',[SeanceController::class, 'getAllSeances']);
+Route::get('/seances/{id}',[SeanceController::class, 'getSeanceById']);
+Route::put('/seances/{id}',[SeanceController::class, 'updateSeance']);
+Route::delete('/seances/{id}',[SeanceController::class, 'deleteSeance']);
+Route::get('/seances/module/{module_id}',[SeanceController::class, 'getSeancesByModule']);
 
 // """"""""""""""""""""""Presence routes #############################"
+Route::post('/presences/marquer',[App\Http\Controllers\PresenceController::class, 'marquerPresence']);
+Route::get('/presences/seance/{seance_id}',[App\Http\Controllers\PresenceController::class, 'getPresencesBySeance']);
+Route::get('/presences/etudiant/{etudiant_id}',[App\Http\Controllers\PresenceController::class, 'getPresencesByEtudiant']);
+Route::get('/presences',[App\Http\Controllers\PresenceController::class, 'getAllPresences']);
+Route::put('/presences/{id}',[App\Http\Controllers\PresenceController::class, 'updatePresence']);
+Route::get('/presences/{id}',[App\Http\Controllers\PresenceController::class, 'getPresenceById']);
+Route::delete('/presences/{id}',[App\Http\Controllers\PresenceController::class, 'deletePresence']);
+});
+
+// Public presence scanning endpoint (students can scan without full authentication)
 Route::post('/api/presences/marquer',[App\Http\Controllers\PresenceController::class, 'marquerPresence']);
-Route::get('/api/presences/seance/{seance_id}',[App\Http\Controllers\PresenceController::class, 'getPresencesBySeance']);
-Route::get('/api/presences/etudiant/{etudiant_id}',[App\Http\Controllers\PresenceController::class, 'getPresencesByEtudiant']);
-Route::get('/api/presences',[App\Http\Controllers\PresenceController::class, 'getAllPresences']);
-Route::put('/api/presences/{id}',[App\Http\Controllers\PresenceController::class, 'updatePresence']);
-Route::get('/api/presences/{id}',[App\Http\Controllers\PresenceController::class, 'getPresenceById']);
-Route::delete('/api/presences/{id}',[App\Http\Controllers\PresenceController::class, 'deletePresence']);
 
 

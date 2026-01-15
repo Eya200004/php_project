@@ -33,6 +33,7 @@ import StudentModules from "./pages/student/Modules";
 import StudentDocuments from "./pages/student/Documents";
 import StudentAnnouncements from "./pages/student/Announcements";
 import StudentSettings from "./pages/student/Settings";
+import ScanPresence from "./pages/student/ScanPresence";
 
 function Router() {
   const { isLoading } = useAuth();
@@ -76,6 +77,7 @@ function Router() {
       <Route path="/student/documents" component={StudentDocuments} />
       <Route path="/student/announcements" component={StudentAnnouncements} />
       <Route path="/student/settings" component={StudentSettings} />
+      <Route path="/student/scan-presence" component={ScanPresence} />
 
       {/* Default and 404 Routes */}
       <Route path="/" component={Login} />
