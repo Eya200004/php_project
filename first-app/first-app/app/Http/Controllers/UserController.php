@@ -50,40 +50,6 @@ class UserController extends Controller
             return response()->json(['message' => 'Server error: ' . $e->getMessage()], 500);
         }
     }
-
-    function me(Request $request){
-        $user = $request->user();
-        
-        if(!$user){
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-
-        $data = [
-            'id' => $user->id,
-            'name' => $user->name,
-            'prenom' => $user->prenom,
-            'email' => $user->email,
-            'role' => $user->role,
-        ];
-
-        // Check if user has an enseignant profile (regardless of role value)
-        $enseignant = Enseignant::where('user_id', $user->id)->first();
-        if($enseignant){
-            $data['enseignant_id'] = $enseignant->id;
-            $data['role'] = 'enseignant'; // Ensure role is set to enseignant
-            \Log::info('User ' . $user->id . ' has enseignant_id: ' . $enseignant->id);
-        }
-
-        // Check if user has an etudiant profile
-        $etudiant = Etudiant::where('user_id', $user->id)->first();
-        if($etudiant){
-            $data['etudiant_id'] = $etudiant->id;
-            $data['role'] = 'etudiant'; // Ensure role is set to etudiant
-        }
-
-        return response()->json($data);
-    }
-
     function getStats(){
         $totalStudents = Etudiant::count();
         $totalTeachers = Enseignant::count();
@@ -102,36 +68,34 @@ class UserController extends Controller
     }
 
     function me(Request $request){
-        $user = $request->user();
-        
-        if(!$user){
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
+    $user = $request->user();
 
-        // Build user response with role-specific data
-        $userData = [
-            'id' => $user->id,
-            'name' => $user->name,
-            'prenom' => $user->prenom,
-            'email' => $user->email,
-            'role' => $user->role,
-        ];
-
-        // If user is a teacher, include enseignant_id
-        if($user->role === 'enseignant'){
-            $enseignant = Enseignant::where('user_id', $user->id)->first();
-            if($enseignant){
-                $userData['enseignant_id'] = $enseignant->id;
-            }
-        }
-
-        // If user is a student, include etudiant_id
-        if($user->role === 'etudiant'){
-            $etudiant = Etudiant::where('user_id', $user->id)->first();
-            if($etudiant){
-                $userData['etudiant_id'] = $etudiant->id;
-            }
-        }
-
-        return response()->json($userData);
+    if(!$user){
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
+
+    $userData = [
+        'id' => $user->id,
+        'name' => $user->name,
+        'prenom' => $user->prenom,
+        'email' => $user->email,
+        'role' => $user->role,
+    ];
+
+    // Si utilisateur a un profil enseignant
+    $enseignant = Enseignant::where('user_id', $user->id)->first();
+    if($enseignant){
+        $userData['enseignant_id'] = $enseignant->id;
+        $userData['role'] = 'enseignant';
+    }
+
+    // Si utilisateur a un profil étudiant
+    $etudiant = Etudiant::where('user_id', $user->id)->first();
+    if($etudiant){
+        $userData['etudiant_id'] = $etudiant->id;
+        $userData['role'] = 'etudiant';
+    }
+
+    return response()->json($userData);
+}
+}

@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Annonce extends Model
 {
-    //
+    use HasFactory;
+
     protected $fillable = [
         'titre',
         'contenu',
@@ -16,9 +18,13 @@ class Annonce extends Model
         'niveau',
     ];
 
-    // Une annonce appartient à un enseignant
+    protected $casts = [
+        'datepublication' => 'date',
+    ];
+
+    // Relation avec enseignant
     public function enseignant()
     {
-        return $this->belongsTo(Enseignant::class);
+        return $this->belongsTo(\App\Models\Enseignant::class);
     }
 }

@@ -297,41 +297,69 @@ export const presenceAPI = {
 };
 
 // ==================== ANNONCE ENDPOINTS ====================
-
 export const annonceAPI = {
+  // Récupérer toutes les annonces
   getAll: () =>
-    apiRequest('/annonces', {
+    apiRequest('/annonces', {  // ✅ Sans /api
       method: 'GET',
     }),
 
+  // Récupérer une annonce par son ID
   getById: (id: string) =>
-    apiRequest(`/annonces/${id}`, {
+    apiRequest(`/annonces/${id}`, {  // ✅ Sans /api
       method: 'GET',
     }),
 
-  create: (data: any) =>
-    apiRequest('/annonces/add', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+  // Créer une nouvelle annonce
+  create: async (data: any) => {
+    try {
+      const formattedData = {
+        ...data,
+        datepublication: data.datepublication || new Date().toISOString().split('T')[0],
+        enseignant_id: parseInt(data.enseignant_id) || data.enseignant_id,
+      };
 
+      console.log('📤 Envoi des données:', formattedData);
+
+      const response = await apiRequest('/annonces/add', {  // ✅ Sans /api
+        method: 'POST',
+        body: JSON.stringify(formattedData),
+      });
+
+      console.log('✅ Réponse reçue:', response);
+      return response;
+
+    } catch (error) {
+      console.error('❌ Erreur lors de la création:', error);
+      throw error;
+    }
+  },
+
+  // Mettre à jour une annonce
   update: (id: string, data: any) =>
-    apiRequest(`/annonces/${id}`, {
+    apiRequest(`/annonces/${id}`, {  // ✅ Sans /api
       method: 'PUT',
       body: JSON.stringify(data),
     }),
 
+  // Supprimer une annonce
   delete: (id: string) =>
-    apiRequest(`/annonces/${id}`, {
+    apiRequest(`/annonces/${id}`, {  // ✅ Sans /api
       method: 'DELETE',
     }),
 
+  // Récupérer toutes les annonces d'un enseignant spécifique
   getByEnseignant: (enseignantId: string) =>
-    apiRequest(`/annonces/enseignant/${enseignantId}`, {
+    apiRequest(`/annonces/enseignant/${enseignantId}`, {  // ✅ Sans /api
+      method: 'GET',
+    }),
+
+  // Récupérer les annonces pour un étudiant
+  getForStudent: (etudiantId: string) =>
+    apiRequest(`/annonces/student/${etudiantId}`, {  // ✅ Sans /api
       method: 'GET',
     }),
 };
-
 // ==================== DEPARTEMENT ENDPOINTS ====================
 
 export const departementAPI = {

@@ -1,4 +1,12 @@
 import { useAuth, UserRole } from '@/contexts/AuthContext';
+import { Link } from "react-router-dom";
+import { QrCode } from 'lucide-react';
+
+
+<Link to="/etudiant/scan">
+  <button>📷 Scanner la présence</button>
+</Link>
+
 import { useLocation } from 'wouter';
 import {
   LayoutDashboard,
@@ -40,8 +48,18 @@ function getSidebarItems(role: UserRole): NavItem[] {
       { label: 'Suivi Présence', href: '/teacher/attendance', icon: <Users className="w-5 h-5" /> },
     ],
     etudiant: [
-      { label: 'Tableau de Bord', href: '/student/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-    ],
+  { 
+    label: 'Tableau de Bord',
+    href: '/student/dashboard',
+    icon: <LayoutDashboard className="w-5 h-5" />
+  },
+  {
+    label: 'Scanner la présence',
+    href: '/student/ScanPresence',
+    icon: <QrCode className="w-5 h-5" />
+  }
+],
+
   };
 
   return baseItems[role] || [];

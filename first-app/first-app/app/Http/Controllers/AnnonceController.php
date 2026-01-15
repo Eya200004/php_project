@@ -4,38 +4,54 @@ namespace App\Http\Controllers;
 
 use App\Models\Annonce;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;  // ← AJOUTER CETTE LIGNE
 
 class AnnonceController extends Controller
 {
-    //
-
     public function createAnnonce(Request $request)
     {
-        $request->validate([
-            'titre' => 'required|string',
-            'contenu' => 'required|string',
-            'datepublication' => 'required|date',
-            'enseignant_id' => 'nullable|exists:enseignants,id',
-            'filiere_id' => 'nullable|string',
-            'niveau' => 'nullable|string',
-        ]);
+        try {
+            // Log pour déboguer
+            Log::info('Tentative de création d\'annonce', $request->all());
 
-        $annonce = Annonce::create([
-            'titre' => $request->titre,
-            'contenu' => $request->contenu,
-            'datepublication' => $request->datepublication,
-            'enseignant_id' => $request->enseignant_id,
-            'filiere_id' => $request->filiere_id,
-            'niveau' => $request->niveau,
-        ]);
+            $validated = $request->validate([
+                'titre' => 'required|string|max:255',
+                'contenu' => 'required|string',
+                'datepublication' => 'required|date',
+                'enseignant_id' => 'required|exists:enseignants,id',
+                'filiere_id' => 'nullable|string',
+                'niveau' => 'nullable|string',
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Annonce créée avec succès',
-            'annonce' => $annonce
-        ], 201);
+            $annonce = Annonce::create($validated);
+
+            Log::info('Annonce créée avec succès', ['id' => $annonce->id]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Annonce créée avec succès',
+                'annonce' => $annonce
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Erreur de validation', ['errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la création de l\'annonce', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la création de l\'annonce: ' . $e->getMessage()
+            ], 500);
+        }
     }
-
  
     public function getAllAnnonces()
     {
@@ -138,4 +154,29 @@ class AnnonceController extends Controller
         ]);
     }
 
+    public function getAnnoncesForStudent($etudiant_id)
+    {
+        $etudiant = \App\Models\Etudiant::find($etudiant_id);
+
+        if (!$etudiant) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Étudiant non trouvé'
+            ], 404);
+        }
+
+        $annonces = Annonce::where(function($query) use ($etudiant) {
+            $query->whereNull('filiere_id')
+                  ->orWhere('filiere_id', $etudiant->filiere_id);
+        })->where(function($query) use ($etudiant) {
+            $query->whereNull('niveau')
+                  ->orWhere('niveau', $etudiant->niveau);
+        })->with('enseignant.user')
+          ->get();
+
+        return response()->json([
+            'success' => true,
+            'annonces' => $annonces
+        ]);
+    }
 }

@@ -16,9 +16,11 @@ return new class extends Migration
             $table->string('titre');                  // titre de l'annonce
             $table->text('contenu');                  // contenu
             $table->date('datepublication');          // date de publication
-            $table->foreignId('enseignant_id')        // relation vers Enseignant
-                  ->constrained()
-                  ->cascadeOnDelete();
+            $table->foreignId('enseignant_id')
+                    ->nullable()           // <-- rendre nullable
+                    ->constrained()
+                    ->cascadeOnDelete();
+
             $table->timestamps();
         });
     }

@@ -32,6 +32,8 @@ Route::put('/etudiants/{id}',[EtudiantController::class, 'updateEtudiant']);
 Route::delete('/etudiants/{id}',[EtudiantController::class, 'deleteEtudiant']);
 Route::get('/etudiants/filiere/{filiere_id}',[EtudiantController::class, 'getEtudiantsByFiliere']);
 
+
+
 // """"""""""""""""""""""Enseignant routes #############################"
 
 Route::post('/enseignants/add',[EnseignantController::class, 'createEnseignant']);
